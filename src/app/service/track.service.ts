@@ -83,18 +83,21 @@ export class TrackService {
     const metadata: Partial<TrackMetadata> = {
       title: formData.get('title') as string,
       artist: formData.get('artist') as string,
-      description: formData.get('description') as string,
-      category: formData.get('category') as MusicCategory
+      description: formData.get('description') as string || '',
+      category: formData.get('category') as MusicCategory,
+      id: id
     };
 
+    let updateChain: Observable<any> = this.indexDBService.getTrackMetadata(id);
+
     if (imageFile) {
-      return this.indexDBService.saveImage(id, imageFile).pipe(
-        switchMap(() => this.indexDBService.updateTrack(id, metadata)),
-        switchMap(() => this.getTrack(id))
+      updateChain = updateChain.pipe(
+        switchMap(() => this.indexDBService.saveImage(id, imageFile))
       );
     }
 
-    return this.indexDBService.updateTrack(id, metadata).pipe(
+    return updateChain.pipe(
+      switchMap(() => this.indexDBService.updateTrack(id, metadata)),
       switchMap(() => this.getTrack(id))
     );
   }

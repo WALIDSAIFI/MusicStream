@@ -199,8 +199,10 @@ export class IndexDBService {
   updateTrack(id: string, metadata: Partial<TrackMetadata>): Observable<void> {
     return this.ensureDbInitialized().pipe(
       switchMap(() => new Observable<void>(observer => {
+        console.log('Début de la mise à jour du track:', id, metadata);
         const transaction = this.db?.transaction(['trackMetadata'], 'readwrite');
         if (!transaction) {
+          console.error('Base de données non initialisée');
           observer.error(new Error('Database not initialized'));
           return;
         }
@@ -208,10 +210,15 @@ export class IndexDBService {
         const store = transaction.objectStore('trackMetadata');
         const getRequest = store.get(id);
         
-        getRequest.onerror = () => observer.error(getRequest.error);
+        getRequest.onerror = () => {
+          console.error('Erreur lors de la récupération du track:', getRequest.error);
+          observer.error(getRequest.error);
+        };
+
         getRequest.onsuccess = () => {
           const existingTrack = getRequest.result;
           if (!existingTrack) {
+            console.error('Track non trouvé:', id);
             observer.error(new Error('Track not found'));
             return;
           }
@@ -222,9 +229,15 @@ export class IndexDBService {
             id
           };
 
+          console.log('Track mis à jour:', updatedTrack);
+
           const putRequest = store.put(updatedTrack);
-          putRequest.onerror = () => observer.error(putRequest.error);
+          putRequest.onerror = () => {
+            console.error('Erreur lors de la sauvegarde du track:', putRequest.error);
+            observer.error(putRequest.error);
+          };
           putRequest.onsuccess = () => {
+            console.log('Track sauvegardé avec succès');
             observer.next();
             observer.complete();
           };

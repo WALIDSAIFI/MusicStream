@@ -95,22 +95,48 @@ export class TrakUpdatformComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       const formData = new FormData();
       
-      Object.keys(this.trackForm.value).forEach(key => {
-        const value = this.trackForm.value[key];
-        if (value !== null) {
-          formData.append(key, value);
-        }
-      });
+      formData.append('title', this.trackForm.get('title')?.value);
+      formData.append('artist', this.trackForm.get('artist')?.value);
+      formData.append('description', this.trackForm.get('description')?.value || '');
+      formData.append('category', this.trackForm.get('category')?.value);
+
+      const imageFile = this.trackForm.get('image')?.value;
+      if (imageFile instanceof File) {
+        formData.append('image', imageFile);
+      }
 
       this.trackService.updateTrack(this.track.id, formData).subscribe({
         next: (updatedTrack) => {
+          console.log('Track mis à jour:', updatedTrack);
+          this.isLoading = false;
           this.router.navigate(['/tracks', updatedTrack.id]);
         },
         error: (error: Error) => {
+          console.error('Erreur lors de la mise à jour:', error);
           this.error = error.message;
           this.isLoading = false;
         }
       });
+    } else {
+      this.error = 'Veuillez remplir tous les champs requis correctement.';
     }
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.trackForm.get(fieldName);
+    return field ? field.invalid && (field.dirty || field.touched) : false;
+  }
+
+  getErrorMessage(fieldName: string): string {
+    const field = this.trackForm.get(fieldName);
+    if (field?.errors) {
+      if (field.errors['required']) {
+        return 'Ce champ est requis';
+      }
+      if (field.errors['maxlength']) {
+        return `La longueur maximale est de ${field.errors['maxlength'].requiredLength} caractères`;
+      }
+    }
+    return '';
   }
 }
