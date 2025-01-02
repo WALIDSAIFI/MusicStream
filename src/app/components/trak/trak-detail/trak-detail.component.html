@@ -1,0 +1,93 @@
+<div class="min-h-screen bg-gray-100 py-8">
+  <div class="max-w-3xl mx-auto px-4">
+    <div *ngIf="track" class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <!-- En-tête avec titre grand format -->
+      <div class="p-6 border-b border-gray-100">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2 text-center">{{ track.title }}</h1>
+        <p class="text-2xl text-gray-600 text-center">{{ track.artist }}</p>
+      </div>
+
+      <!-- Layout en grille pour l'image et les infos -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+        <!-- Image plus petite -->
+        <div class="relative h-40 md:h-40 rounded-lg overflow-hidden bg-gray-200">
+          <img *ngIf="track.imageUrl" 
+               [src]="track.imageUrl" 
+               [alt]="track.title"
+               class="w-full h-full object-cover">
+          <div *ngIf="!track.imageUrl" 
+               class="w-full h-full flex items-center justify-center">
+            <svg class="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Informations principales -->
+        <div class="md:col-span-2">
+          <div class="space-y-4">
+            <!-- Badges d'information -->
+            <div class="flex flex-wrap gap-2">
+              <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                {{ track.category }}
+              </span>
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                {{ formatFileSize(track.fileSize) }}
+              </span>
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                {{ track.mimeType }}
+              </span>
+            </div>
+
+            <!-- Description -->
+            <div *ngIf="track.description" class="text-gray-600 text-sm">
+              {{ track.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lecteur Audio -->
+      <div class="audio-player bg-gray-50 p-4 border-t border-gray-100">
+        <!-- Contrôles principaux -->
+        <div class="flex items-center gap-4 mb-4">
+          <button (click)="onPlayPause()"
+                  class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 shadow-md">
+            <svg *ngIf="!(isPlaying$ | async)" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg *ngIf="isPlaying$ | async" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+
+          <!-- Barre de progression -->
+          <div *ngIf="progress$ | async as progress" class="flex-1 space-y-1">
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>{{ formatTime(progress.currentTime) }}</span>
+              <span>{{ formatTime(progress.duration) }}</span>
+            </div>
+            
+            <div class="relative">
+              <input type="range"
+                     class="w-full cursor-pointer"
+                     [min]="0"
+                     [max]="progress.duration"
+                     [value]="progress.currentTime"
+                     (input)="onSeek($event)">
+              <div class="absolute left-0 right-0 bottom-0 h-1 bg-blue-500 rounded"
+                   [style.width.%]="(progress.currentTime / progress.duration) * 100">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date d'ajout -->
+        <div class="text-xs text-gray-500 text-right">
+          Ajouté le {{ track.addedDate | date:'longDate' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

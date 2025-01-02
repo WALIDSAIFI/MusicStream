@@ -1,0 +1,35 @@
+/* Styles pour les états des champs */
+.ng-invalid.ng-touched {
+  border-color: #ef4444;
+}
+
+.ng-invalid.ng-touched:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 1px #ef4444;
+}
+
+/* Animation de chargement */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Style pour l'aperçu de l'image */
+.image-preview {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.image-preview img {
+  transition: transform 0.2s;
+}
+
+.image-preview:hover img {
+  transform: scale(1.05);
+}
