@@ -1,3 +1,5 @@
+import { Track } from '../../models/track.model';
+
 export enum PlayerStatus {
   PLAYING = 'playing',
   PAUSED = 'paused',
@@ -13,21 +15,25 @@ export enum LoadingStatus {
 }
 
 export interface PlayerState {
-  currentTrackId: string | null;
-  status: PlayerStatus;
-  loadingStatus: LoadingStatus;
+  currentTrack: Track | null;
   currentTime: number;
   duration: number;
   volume: number;
+  playerStatus: PlayerStatus;
+  loadingStatus: LoadingStatus;
   error: string | null;
+  queue: Track[];
+  currentTrackId: string | null;
 }
 
 export const initialPlayerState: PlayerState = {
-  currentTrackId: null,
-  status: PlayerStatus.STOPPED,
-  loadingStatus: LoadingStatus.IDLE,
+  currentTrack: null,
   currentTime: 0,
   duration: 0,
   volume: 1,
-  error: null
+  playerStatus: PlayerStatus.STOPPED,
+  loadingStatus: LoadingStatus.IDLE,
+  error: null,
+  queue: [],
+  currentTrackId: null
 }; 

@@ -1,91 +1,173 @@
-<div class="min-h-screen bg-gray-100 py-8">
-  <div class="max-w-3xl mx-auto px-4">
-    <div *ngIf="track" class="bg-white rounded-xl shadow-lg overflow-hidden">
-      <!-- En-tête avec titre grand format -->
-      <div class="p-6 border-b border-gray-100">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2 text-center">{{ track.title }}</h1>
-        <p class="text-2xl text-gray-600 text-center">{{ track.artist }}</p>
-      </div>
+<div class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-4xl mx-auto px-4">
 
-      <!-- Layout en grille pour l'image et les infos -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-        <!-- Image plus petite -->
-        <div class="relative h-40 md:h-40 rounded-lg overflow-hidden bg-gray-200">
-          <img *ngIf="track.imageUrl" 
-               [src]="track.imageUrl" 
-               [alt]="track.title"
-               class="w-full h-full object-cover">
-          <div *ngIf="!track.imageUrl" 
-               class="w-full h-full flex items-center justify-center">
-            <svg class="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
-            </svg>
+
+    <!-- État de chargement -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="error" class="mb-4 bg-red-50 p-4 rounded text-red-600">
+      {{ error }}
+    </div>
+
+    <!-- Contenu principal -->
+    <div *ngIf="track && !isLoading" class="bg-white rounded-lg shadow-lg overflow-hidden">
+      <!-- Section du lecteur -->
+      <div class="relative aspect-video bg-black">
+        <!-- Image de couverture -->
+        <img [src]="track.imageUrl || 'assets/default-album.png'"
+             [alt]="track.title"
+             class="w-full h-full object-cover">
+
+        <!-- Overlay des contrôles -->
+        <div class="absolute inset-0 bg-black/60 flex flex-col justify-between p-6">
+          <!-- Informations de la piste -->
+          <div class="text-white">
+            <h1 class="text-3xl font-bold mb-2">{{ track.title }}</h1>
+            <p class="text-xl opacity-90">{{ track.artist }}</p>
           </div>
-        </div>
 
-        <!-- Informations principales -->
-        <div class="md:col-span-2">
-          <div class="space-y-4">
-            <!-- Badges d'information -->
-            <div class="flex flex-wrap gap-2">
-              <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                {{ track.category }}
-              </span>
-              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                {{ formatFileSize(track.fileSize) }}
-              </span>
-              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                {{ track.mimeType }}
-              </span>
-            </div>
-
-            <!-- Description -->
-            <div *ngIf="track.description" class="text-gray-600 text-sm">
-              {{ track.description }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lecteur Audio -->
-      <div class="audio-player bg-gray-50 p-4 border-t border-gray-100">
-        <!-- Contrôles principaux -->
-        <div class="flex items-center gap-4 mb-4">
-          <button (click)="onPlayPause()"
-                  class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 shadow-md">
-            <svg *ngIf="!(isPlaying$ | async)" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <svg *ngIf="isPlaying$ | async" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-            </svg>
-          </button>
-
-          <!-- Barre de progression -->
-          <div *ngIf="progress$ | async as progress" class="flex-1 space-y-1">
-            <div class="flex justify-between text-xs text-gray-500">
-              <span>{{ formatTime(progress.currentTime) }}</span>
-              <span>{{ formatTime(progress.duration) }}</span>
+          <!-- Progress Bar -->
+          <div class="space-y-3">
+            <!-- Time Display -->
+            <div class="flex justify-between text-sm text-white/90 font-medium">
+              <span>{{ formatTime((progress$ | async)?.currentTime || null) }}</span>
+              <span>{{ formatTime((progress$ | async)?.duration || null) }}</span>
             </div>
             
-            <div class="relative">
-              <input type="range"
-                     class="w-full cursor-pointer"
-                     [min]="0"
-                     [max]="progress.duration"
-                     [value]="progress.currentTime"
-                     (input)="onSeek($event)">
-              <div class="absolute left-0 right-0 bottom-0 h-1 bg-blue-500 rounded"
-                   [style.width.%]="(progress.currentTime / progress.duration) * 100">
+            <!-- Progress Bar Container -->
+            <div class="relative group"
+                 #progressBar
+                 (mousedown)="onProgressBarMouseDown($event)">
+              <!-- Background Track -->
+              <div class="h-2 bg-white/20 rounded-full backdrop-blur-sm 
+                          group-hover:bg-white/30 transition-all duration-300">
+              </div>
+              
+              <!-- Progress Fill -->
+              <div class="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-purple-500 
+                          rounded-full transition-all duration-150 group-hover:from-blue-400 
+                          group-hover:to-purple-400 group-hover:shadow-lg"
+                   [style.width.%]="(progress$ | async)?.progress || 0">
+                <!-- Glow Effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-400/50 to-purple-400/50 
+                            blur-sm rounded-full"></div>
+              </div>
+              
+              <!-- Cursor Handle -->
+              <div class="absolute h-4 w-4 -top-1 -ml-2 bg-white rounded-full shadow-lg 
+                          transform transition-transform duration-150
+                          group-hover:scale-125 group-hover:shadow-purple-500/50
+                          cursor-pointer"
+                   [style.left.%]="(progress$ | async)?.progress || 0">
+                <!-- Inner Circle -->
+                <div class="absolute inset-1 bg-gradient-to-br from-blue-500 to-purple-500 
+                            rounded-full opacity-80"></div>
+              </div>
+            </div>
+            
+            <!-- Track Info -->
+            <div class="flex items-center justify-center space-x-2 text-xs text-white/60">
+              <span class="tracking-wider uppercase">{{ track.artist }} - {{ track.title }}</span>
+            </div>
+          </div>
+
+          <!-- Contrôles du lecteur -->
+          <div class="space-y-4">
+            <!-- Contrôles de lecture -->
+            <div class="flex items-center justify-center space-x-6">
+              <!-- Bouton précédent -->
+              <button (click)="onPreviousTrack()"
+                      class="text-white/80 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                </svg>
+              </button>
+
+              <!-- Bouton lecture/pause -->
+              <button (click)="onPlay()"
+                      *ngIf="(playerInfo$ | async)?.playerStatus !== PlayerStatus.PLAYING"
+                      class="p-2 rounded-full bg-white text-black hover:scale-105 transition-transform">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+              <button (click)="onPause()"
+                      *ngIf="(playerInfo$ | async)?.playerStatus === PlayerStatus.PLAYING"
+                      class="p-2 rounded-full bg-white text-black hover:scale-105 transition-transform">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              </button>
+
+              <!-- Bouton suivant -->
+              <button (click)="onNextTrack()"
+                      class="text-white/80 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                </svg>
+              </button>
+
+              <!-- Volume Control -->
+              <div class="volume-control">
+                <button (click)="toggleMute()"
+                        class="volume-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path [attr.d]="getVolumeIcon((volume$ | async) || 0)"/>
+                  </svg>
+                </button>
+                
+                <!-- Volume Slider -->
+                <div class="volume-slider-container">
+                  <input type="range"
+                         class="volume-slider"
+                         min="0"
+                         max="1"
+                         step="0.01"
+                         [value]="(volume$ | async) || 0"
+                         [style.--volume-percentage.%]="((volume$ | async) || 0) * 100"
+                         (input)="onVolumeChange($event)">
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Date d'ajout -->
-        <div class="text-xs text-gray-500 text-right">
-          Ajouté le {{ track.addedDate | date:'longDate' }}
+      <!-- Informations détaillées -->
+      <div class="p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">{{ track.title }}</h2>
+            <p class="text-gray-600">{{ track.artist }}</p>
+          </div>
+          <div class="flex space-x-2">
+            <button (click)="onEdit()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md
+                           hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+              Modifier
+            </button>
+            <button (click)="onDelete()"
+                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md
+                           hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+              Supprimer
+            </button>
+          </div>
+        </div>
+
+        <div class="prose max-w-none">
+          <p class="text-gray-600">{{ track.description }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+          <div>
+            <p><span class="font-medium">Catégorie:</span> {{ track.category }}</p>
+            <p><span class="font-medium">Date d'ajout:</span> {{ track.createdAt | date:'longDate' }}</p>
+          </div>
         </div>
       </div>
     </div>

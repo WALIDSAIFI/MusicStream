@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TrackService } from '../../../service/track.service';
 import { MusicCategory } from '../../../models/track.model';
 import { Router } from '@angular/router';
-import { SUPPORTED_AUDIO_FORMATS, FILE_SIZE_LIMIT } from '../../../models/track-storage.model';
 
 @Component({
   selector: 'app-trak-addform',
@@ -16,6 +15,7 @@ export class TrakAddformComponent implements OnInit {
   errorMessage: string = '';
   isLoading: boolean = false;
   imagePreview: string | null = null;
+  audioDuration: number = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -29,11 +29,11 @@ export class TrakAddformComponent implements OnInit {
 
   private initForm(): void {
     this.trackForm = this.fb.group({
-      title: ['', [Validators.required, Validators.maxLength(50)]],
-      artist: ['', [Validators.required, Validators.maxLength(50)]],
-      description: ['', [Validators.maxLength(200)]],
-      category: ['', Validators.required],
-      audio: [null, Validators.required],
+      title: [''],
+      artist: [''],
+      description: [''],
+      category: [''],
+      audio: [null],
       image: [null]
     });
   }
@@ -41,19 +41,8 @@ export class TrakAddformComponent implements OnInit {
   onFileSelected(event: Event, type: 'audio' | 'image'): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
-      if (type === 'audio') {
-        if (!SUPPORTED_AUDIO_FORMATS.includes(file.type)) {
-          this.errorMessage = `Format non supporté. Formats acceptés: ${SUPPORTED_AUDIO_FORMATS.join(', ')}`;
-          return;
-        }
-        if (file.size > FILE_SIZE_LIMIT) {
-          this.errorMessage = `Fichier trop volumineux. Taille maximale: ${FILE_SIZE_LIMIT / (1024 * 1024)}MB`;
-          return;
-        }
-      }
-      
-      this.trackForm.patchValue({ [type]: file });
-      this.errorMessage = '';
+      const control = this.trackForm.get(type);
+      control?.setValue(file);
       
       if (type === 'image') {
         const reader = new FileReader();
@@ -62,41 +51,45 @@ export class TrakAddformComponent implements OnInit {
         };
         reader.readAsDataURL(file);
       }
+
+      if (type === 'audio') {
+        const audioElement = new Audio();
+        const objectUrl = URL.createObjectURL(file);
+        
+        audioElement.addEventListener('loadedmetadata', () => {
+          this.audioDuration = audioElement.duration;
+          console.log('Durée calculée:', this.audioDuration);
+          URL.revokeObjectURL(objectUrl);
+        });
+
+        audioElement.src = objectUrl;
+      }
     }
   }
 
   onSubmit(): void {
-    if (this.trackForm.valid) {
-      this.isLoading = true;
-      this.errorMessage = '';
-      const formData = new FormData();
-      
-      Object.keys(this.trackForm.value).forEach(key => {
-        const value = this.trackForm.value[key];
-        if (value !== null) {
-          formData.append(key, value);
-        }
-      });
+    this.isLoading = true;
+    const formData = new FormData();
+    
+    // Ajouter les champs du formulaire à formData
+    Object.keys(this.trackForm.value).forEach(key => {
+      if (this.trackForm.value[key] !== null) {
+        formData.append(key, this.trackForm.value[key]);
+      }
+    });
 
-      this.trackService.addTrack(formData).subscribe({
-        next: (track) => {
-          console.log('Track ajouté avec succès:', track);
-          this.router.navigate(['/tracks']).then(() => {
-            // Optionnel : Ajouter un message de succès
-            // this.snackBar.open('Track ajouté avec succès', 'Fermer', { duration: 3000 });
-          });
-        },
-        error: (error) => {
-          console.error('Erreur lors de l\'ajout:', error);
-          this.errorMessage = error.message;
-          this.isLoading = false;
-        },
-        complete: () => {
-          this.isLoading = false;
-        }
-      });
-    } else {
-      this.errorMessage = 'Veuillez remplir tous les champs requis';
-    }
+    // Ajouter la durée calculée
+    formData.append('duration', this.audioDuration.toString());
+
+    this.trackService.addTrack(formData).subscribe({
+      next: (response) => {
+        console.log('Piste ajoutée avec succès:', response);
+        this.router.navigate(['/tracks']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'ajout de la piste:', error);
+        this.isLoading = false;
+      }
+    });
   }
 }

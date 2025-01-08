@@ -1,42 +1,64 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { PlayerState } from './player.state';
+import { PlayerState, PlayerStatus } from './player.state';
 
 export const selectPlayerState = createFeatureSelector<PlayerState>('player');
 
-export const selectCurrentTrackId = createSelector(
+export const selectCurrentTrack = createSelector(
   selectPlayerState,
-  (state) => state.currentTrackId
+  (state: PlayerState) => state.currentTrack
 );
 
 export const selectPlayerStatus = createSelector(
   selectPlayerState,
-  (state) => state.status
+  (state: PlayerState) => state.playerStatus
 );
 
 export const selectLoadingStatus = createSelector(
   selectPlayerState,
-  (state) => state.loadingStatus
+  (state: PlayerState) => state.loadingStatus
 );
 
-export const selectProgress = createSelector(
+export const selectCurrentTime = createSelector(
   selectPlayerState,
-  (state) => ({
-    currentTime: state.currentTime,
-    duration: state.duration
-  })
+  (state: PlayerState) => state.currentTime
+);
+
+export const selectDuration = createSelector(
+  selectPlayerState,
+  (state: PlayerState) => state.duration
 );
 
 export const selectVolume = createSelector(
   selectPlayerState,
-  (state) => state.volume
+  (state: PlayerState) => state.volume
 );
 
 export const selectError = createSelector(
   selectPlayerState,
-  (state) => state.error
+  (state: PlayerState) => state.error
 );
 
-export const selectIsPlaying = createSelector(
+export const selectQueue = createSelector(
   selectPlayerState,
-  (state) => state.status === 'playing'
+  (state: PlayerState) => state.queue
+);
+
+export const selectProgress = createSelector(
+  selectPlayerState,
+  (state: PlayerState) => ({
+    currentTime: state.currentTime,
+    duration: state.duration,
+    progress: state.duration > 0 ? (state.currentTime / state.duration) * 100 : 0
+  })
+);
+
+export const selectPlayerInfo = createSelector(
+  selectPlayerState,
+  (state: PlayerState) => ({
+    playerStatus: state.playerStatus,
+    isPlaying: state.playerStatus === PlayerStatus.PLAYING,
+    isBuffering: state.playerStatus === PlayerStatus.BUFFERING,
+    isError: state.loadingStatus === 'error',
+    errorMessage: state.error
+  })
 ); 

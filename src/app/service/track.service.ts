@@ -2,42 +2,25 @@ import { Injectable } from '@angular/core';
 import { Observable, from, forkJoin } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { Track, MusicCategory } from '../models/track.model';
-import { TrackMetadata } from '../models/track-storage.model';
 import { IndexDBService } from './indexdb.service';
+
+interface TrackMetadata {
+  id: string;
+  title: string;
+  artist: string;
+  description?: string;
+  category: MusicCategory;
+  addedDate: Date;
+  duration: number;
+  fileSize: number;
+  mimeType: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class TrackService {
   constructor(private indexDBService: IndexDBService) {}
-
-  addTrack(trackData: FormData): Observable<Track> {
-    const audioFile = trackData.get('audio') as File;
-    const imageFile = trackData.get('image') as File;
-    
-    const metadata: TrackMetadata = {
-      id: crypto.randomUUID(),
-      title: trackData.get('title') as string,
-      artist: trackData.get('artist') as string,
-      description: trackData.get('description') as string,
-      category: trackData.get('category') as MusicCategory,
-      addedDate: new Date(),
-      duration: 0,
-      fileSize: audioFile.size,
-      mimeType: audioFile.type
-    };
-
-    if (imageFile) {
-      return this.indexDBService.saveImage(metadata.id, imageFile).pipe(
-        switchMap(() => this.indexDBService.saveTrack(metadata, audioFile)),
-        switchMap(() => this.getTrack(metadata.id))
-      );
-    }
-
-    return this.indexDBService.saveTrack(metadata, audioFile).pipe(
-      switchMap(() => this.getTrack(metadata.id))
-    );
-  }
 
   getAllTracks(): Observable<Track[]> {
     return this.indexDBService.getAllTracks().pipe(
@@ -51,7 +34,9 @@ export class TrackService {
               map(({ audio, image }) => ({
                 ...track,
                 audioUrl: URL.createObjectURL(audio),
-                imageUrl: image ? URL.createObjectURL(image) : undefined
+                imageUrl: image ? URL.createObjectURL(image) : undefined,
+                createdAt: track.addedDate,
+                category: track.category as MusicCategory
               }))
             )
           )
@@ -70,10 +55,40 @@ export class TrackService {
           map(({ audio, image }) => ({
             ...metadata,
             audioUrl: URL.createObjectURL(audio),
-            imageUrl: image ? URL.createObjectURL(image) : undefined
+            imageUrl: image ? URL.createObjectURL(image) : undefined,
+            createdAt: metadata.addedDate,
+            category: metadata.category as MusicCategory
           }))
         )
       )
+    );
+  }
+
+  addTrack(formData: FormData): Observable<Track> {
+    const audioFile = formData.get('audio') as File;
+    const imageFile = formData.get('image') as File;
+    
+    const metadata: TrackMetadata = {
+      id: crypto.randomUUID(),
+      title: formData.get('title') as string,
+      artist: formData.get('artist') as string,
+      description: formData.get('description') as string,
+      category: formData.get('category') as MusicCategory,
+      addedDate: new Date(),
+      duration: 0,
+      fileSize: audioFile.size,
+      mimeType: audioFile.type
+    };
+
+    if (imageFile) {
+      return this.indexDBService.saveImage(metadata.id, imageFile).pipe(
+        switchMap(() => this.indexDBService.saveTrack(metadata, audioFile)),
+        switchMap(() => this.getTrack(metadata.id))
+      );
+    }
+
+    return this.indexDBService.saveTrack(metadata, audioFile).pipe(
+      switchMap(() => this.getTrack(metadata.id))
     );
   }
 
@@ -104,5 +119,35 @@ export class TrackService {
 
   deleteTrack(id: string): Observable<void> {
     return this.indexDBService.deleteTrack(id);
+  }
+
+  getNextTrack(currentId: string): Observable<Track> {
+    return new Observable<Track>(observer => {
+      this.getAllTracks().subscribe({
+        next: (tracks) => {
+          const currentIndex = tracks.findIndex(t => t.id === currentId);
+          if (currentIndex > -1 && currentIndex < tracks.length - 1) {
+            observer.next(tracks[currentIndex + 1]);
+          }
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
+    });
+  }
+
+  getPreviousTrack(currentId: string): Observable<Track> {
+    return new Observable<Track>(observer => {
+      this.getAllTracks().subscribe({
+        next: (tracks) => {
+          const currentIndex = tracks.findIndex(t => t.id === currentId);
+          if (currentIndex > 0) {
+            observer.next(tracks[currentIndex - 1]);
+          }
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
+    });
   }
 } 

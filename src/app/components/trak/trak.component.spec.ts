@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { TrakComponent } from './trak.component';
 
 describe('TrakComponent', () => {
@@ -8,10 +7,12 @@ describe('TrakComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TrakComponent]
+      declarations: [ TrakComponent ]
     })
     .compileComponents();
-    
+  });
+
+  beforeEach(() => {
     fixture = TestBed.createComponent(TrakComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

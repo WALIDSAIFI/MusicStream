@@ -1,45 +1,57 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
-import * as PlayerSelectors from '../../store/player/player.selectors';
 import * as PlayerActions from '../../store/player/player.actions';
-import { PlayerStatus, LoadingStatus } from '../../store/player/player.state';
+import * as PlayerSelectors from '../../store/player/player.selectors';
+import { Track } from '../../models/track.model';
 
 @Component({
   selector: 'app-player',
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.css']
 })
-export class PlayerComponent implements OnInit {
-  status$ = this.store.select(PlayerSelectors.selectPlayerStatus);
-  loadingStatus$ = this.store.select(PlayerSelectors.selectLoadingStatus);
-  isPlaying$ = this.store.select(PlayerSelectors.selectIsPlaying);
+export class PlayerComponent implements OnInit, OnDestroy {
+  currentTrack$ = this.store.select(PlayerSelectors.selectCurrentTrack);
+  playerInfo$ = this.store.select(PlayerSelectors.selectPlayerInfo);
   progress$ = this.store.select(PlayerSelectors.selectProgress);
   volume$ = this.store.select(PlayerSelectors.selectVolume);
-  error$ = this.store.select(PlayerSelectors.selectError);
 
   constructor(private store: Store) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Restaurer le dernier volume
+    const savedVolume = localStorage.getItem('playerVolume');
+    if (savedVolume) {
+      this.onVolumeChange(parseFloat(savedVolume));
+    }
+  }
 
-  onPlayPause(): void {
-    this.isPlaying$.pipe(take(1)).subscribe(isPlaying => {
-      if (isPlaying) {
-        this.store.dispatch(PlayerActions.pauseTrack());
-      } else {
-        this.store.dispatch(PlayerActions.resumeTrack());
+  ngOnDestroy(): void {
+    // Sauvegarder le volume actuel
+    this.volume$.subscribe(volume => {
+      localStorage.setItem('playerVolume', volume.toString());
+    }).unsubscribe();
+  }
+
+  onPlay(): void {
+    this.currentTrack$.subscribe(track => {
+      if (track) {
+        this.store.dispatch(PlayerActions.playTrack({ track }));
       }
-    });
+    }).unsubscribe();
+  }
+
+  onPause(): void {
+    this.store.dispatch(PlayerActions.pauseTrack());
   }
 
   onStop(): void {
     this.store.dispatch(PlayerActions.stopTrack());
   }
 
-  onVolumeChange(event: Event): void {
-    const volume = +(event.target as HTMLInputElement).value;
-    this.store.dispatch(PlayerActions.setVolume({ volume }));
+  onVolumeChange(event: Event | number): void {
+    const volume = typeof event === 'number' 
+      ? event 
+      : parseFloat((event.target as HTMLInputElement).value);
+    this.store.dispatch(PlayerActions.updateVolume({ volume }));
   }
 } 

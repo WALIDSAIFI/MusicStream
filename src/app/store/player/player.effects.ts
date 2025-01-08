@@ -1,44 +1,55 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
+import { map, mergeMap, catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { map, mergeMap, catchError, withLatestFrom } from 'rxjs/operators';
 import * as PlayerActions from './player.actions';
-import { PlayerService } from '../../services/player.service';
-import { PlayerStatus, LoadingStatus } from './player.state';
+import { PlayerService } from '../../service/player.service';
 
 @Injectable()
 export class PlayerEffects {
-  playTrack$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(PlayerActions.playTrack),
-      mergeMap(({ trackId }) =>
-        this.playerService.loadAndPlayTrack(trackId).pipe(
-          map(() => PlayerActions.updatePlayerStatus({ status: PlayerStatus.PLAYING })),
-          catchError(error => of(PlayerActions.playerError({ error: error.message })))
-        )
-      )
-    )
-  );
-
-  updateProgress$ = createEffect(() =>
-    this.playerService.progress$.pipe(
-      map(({ currentTime, duration }) =>
-        PlayerActions.updateProgress({ currentTime, duration })
-      )
-    )
-  );
-
-  handleError$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(PlayerActions.playerError),
-      map(() => PlayerActions.updateLoadingStatus({ status: LoadingStatus.ERROR }))
-    )
-  );
-
   constructor(
     private actions$: Actions,
     private playerService: PlayerService,
     private store: Store
   ) {}
+
+  playTrack$ = createEffect(() => this.actions$.pipe(
+    ofType(PlayerActions.playTrack),
+    tap(({ track }) => {
+      this.playerService.loadTrack(track).subscribe({
+        next: () => {
+          this.playerService.play();
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement de la piste:', error);
+        }
+      });
+    })
+  ), { dispatch: false });
+
+  pauseTrack$ = createEffect(() => this.actions$.pipe(
+    ofType(PlayerActions.pauseTrack),
+    tap(() => this.playerService.pause())
+  ), { dispatch: false });
+
+  stopTrack$ = createEffect(() => this.actions$.pipe(
+    ofType(PlayerActions.stopTrack),
+    tap(() => this.playerService.stop())
+  ), { dispatch: false });
+
+  seekTo$ = createEffect(() => this.actions$.pipe(
+    ofType(PlayerActions.seekTo),
+    tap(({ time }) => {
+      console.log('Seeking to:', time);
+      this.playerService.seekTo(time);
+      // Mettre à jour le temps actuel immédiatement
+      this.store.dispatch(PlayerActions.updateCurrentTime({ time }));
+    })
+  ), { dispatch: false });
+
+  setVolume$ = createEffect(() => this.actions$.pipe(
+    ofType(PlayerActions.setVolume),
+    tap(({ volume }) => this.playerService.setVolume(volume))
+  ), { dispatch: false });
 } 

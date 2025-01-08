@@ -1,0 +1,40 @@
+/* Animations pour les boutons */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:not(:disabled):hover {
+  transform: scale(1.05);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+/* Animation de l'indicateur de chargement */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation du bouton play/pause */
+.button-transition {
+  transition: transform 0.2s ease-in-out;
+}
+
+.button-transition:hover {
+  transform: scale(1.1);
+}
+
+/* Animation de l'overlay de chargement */
+.bg-opacity-transition {
+  transition: background-color 0.3s ease-in-out;
+} 

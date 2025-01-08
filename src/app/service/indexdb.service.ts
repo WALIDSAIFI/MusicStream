@@ -137,10 +137,10 @@ export class IndexDBService {
   saveTrack(metadata: TrackMetadata, audioBlob: Blob): Observable<string> {
     return this.ensureDbInitialized().pipe(
       switchMap(() => new Observable<string>(observer => {
-        if (!this.validateAudioFile(audioBlob)) {
-          observer.error(new Error('Format de fichier non supporté ou taille dépassée'));
+      /*  if (!this.validateAudioFile(audioBlob)) {
+          console.log('Format de fichier non supporté ou taille dépassée');
           return;
-        }
+        }*/
 
         const transaction = this.db?.transaction(['trackMetadata', 'audioBlobs'], 'readwrite');
         if (!transaction) {

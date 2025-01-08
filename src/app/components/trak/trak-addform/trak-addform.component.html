@@ -1,103 +1,70 @@
-<div class="max-w-2xl mx-auto p-6">
-  <h2 class="text-2xl font-bold mb-6">Ajouter une nouvelle piste</h2>
+<div class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-6">Ajouter une piste</h2>
 
-  <form [formGroup]="trackForm" (ngSubmit)="onSubmit()" class="space-y-6">
-    <!-- Titre -->
-    <div>
-      <label class="block text-sm font-medium mb-2">Titre</label>
-      <input 
-        type="text" 
-        formControlName="title"
-        class="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
-        [ngClass]="{'border-red-500': trackForm.get('title')?.errors && trackForm.get('title')?.touched}"
-      >
-      <div *ngIf="trackForm.get('title')?.errors?.['required'] && trackForm.get('title')?.touched" 
-           class="text-red-500 text-sm mt-1">
-        Le titre est requis
-      </div>
-    </div>
+      <form [formGroup]="trackForm" (ngSubmit)="onSubmit()">
+        <div class="space-y-6">
+          <!-- Titre -->
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700">Titre</label>
+            <input type="text" id="title" formControlName="title"
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+          </div>
 
-    <!-- Artiste -->
-    <div>
-      <label class="block text-sm font-medium mb-2">Artiste</label>
-      <input 
-        type="text" 
-        formControlName="artist"
-        class="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
-      >
-    </div>
+          <!-- Artiste -->
+          <div>
+            <label for="artist" class="block text-sm font-medium text-gray-700">Artiste</label>
+            <input type="text" id="artist" formControlName="artist"
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+          </div>
 
-    <!-- Description -->
-    <div>
-      <label class="block text-sm font-medium mb-2">Description</label>
-      <textarea 
-        formControlName="description"
-        class="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
-        rows="3"
-      ></textarea>
-    </div>
+          <!-- Description -->
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea id="description" formControlName="description" rows="3"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+          </div>
 
-    <!-- Catégorie -->
-    <div>
-      <label class="block text-sm font-medium mb-2">Catégorie</label>
-      <select 
-        formControlName="category"
-        class="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
-      >
-        <option value="">Sélectionner une catégorie</option>
-        <option *ngFor="let category of categories" [value]="category">
-          {{category}}
-        </option>
-      </select>
-    </div>
+          <!-- Catégorie -->
+          <div>
+            <label for="category" class="block text-sm font-medium text-gray-700">Catégorie</label>
+            <select id="category" formControlName="category"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+              <option value="">Sélectionner une catégorie</option>
+              <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+            </select>
+          </div>
 
-    <!-- Image Upload -->
-    <div>
-      <label class="block text-sm font-medium mb-2">Image de couverture</label>
-      <div class="flex items-center space-x-4">
-        <input 
-          type="file" 
-          (change)="onFileSelected($event, 'image')"
-          accept="image/*"
-          class="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
-        >
-        <!-- Image Preview -->
-        <div *ngIf="imagePreview" class="w-24 h-24">
-          <img [src]="imagePreview" alt="Preview" class="w-full h-full object-cover rounded">
+          <!-- Fichier audio -->
+          <div>
+            <label for="audio" class="block text-sm font-medium text-gray-700">Fichier audio</label>
+            <input type="file" id="audio" (change)="onFileSelected($event, 'audio')"
+                   class="mt-1 block w-full" accept="audio/*">
+          </div>
+
+          <!-- Image -->
+          <div>
+            <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
+            <input type="file" id="image" (change)="onFileSelected($event, 'image')"
+                   class="mt-1 block w-full" accept="image/*">
+            <img *ngIf="imagePreview" [src]="imagePreview" class="mt-2 h-32 w-32 object-cover rounded-lg">
+          </div>
+
+          <!-- Message d'erreur -->
+          <div *ngIf="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</div>
+
+          <!-- Bouton de soumission -->
+          <div class="flex justify-end">
+            <button type="submit" 
+                    [disabled]="isLoading"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <span *ngIf="!isLoading">Ajouter la piste</span>
+              <span *ngIf="isLoading">Ajout en cours...</span>
+            </button>
+          </div>
         </div>
-      </div>
-      <p class="text-sm text-gray-500 mt-1">
-        Format recommandé: JPG, PNG (Max 2MB)
-      </p>
+      </form>
     </div>
-
-    <!-- Fichier Audio -->
-    <div>
-      <label class="block text-sm font-medium mb-2">Fichier Audio</label>
-      <input 
-        type="file" 
-        (change)="onFileSelected($event, 'audio')"
-        accept="audio/mp3,audio/wav,audio/ogg"
-        class="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
-      >
-      <p class="text-sm text-gray-500 mt-1">
-        Formats supportés: MP3, WAV, OGG (Max 15MB)
-      </p>
-    </div>
-
-    <!-- Message d'erreur -->
-    <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-      {{errorMessage}}
-    </div>
-
-    <!-- Bouton Submit -->
-    <button 
-      type="submit" 
-      [disabled]="!trackForm.valid || isLoading"
-      class="btn-primary w-full"
-    >
-      <span *ngIf="isLoading">Chargement...</span>
-      <span *ngIf="!isLoading">Ajouter la piste</span>
-    </button>
-  </form>
+  </div>
 </div>

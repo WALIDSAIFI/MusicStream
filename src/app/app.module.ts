@@ -4,6 +4,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { CommonModule } from '@angular/common';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { RouterModule } from '@angular/router';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -14,11 +16,14 @@ import { TrakUpdatformComponent } from './components/trak/trak-updatform/trak-up
 import { TrakDetailComponent } from './components/trak/trak-detail/trak-detail.component';
 import { BiblioComponent } from './components/biblio/biblio.component';
 import { PlayerComponent } from './components/player/player.component';
+import { PlayerControlsComponent } from './components/trak/player-controls/player-controls.component';
 import { TrackService } from './service/track.service';
 import { IndexDBService } from './service/indexdb.service';
-import { PlayerService } from './services/player.service';
+import { PlayerService } from './service/player.service';
 import { playerReducer } from './store/player/player.reducer';
 import { PlayerEffects } from './store/player/player.effects';
+import { TimePipe } from './pipes/time.pipe';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 @NgModule({
   declarations: [
@@ -29,20 +34,25 @@ import { PlayerEffects } from './store/player/player.effects';
     TrakUpdatformComponent,
     TrakDetailComponent,
     BiblioComponent,
-    PlayerComponent
+    PlayerComponent,
+    PlayerControlsComponent,
+    TimePipe
   ],
   imports: [
     BrowserModule,
     CommonModule,
     AppRoutingModule,
+    RouterModule,
     ReactiveFormsModule,
     StoreModule.forRoot({ player: playerReducer }),
-    EffectsModule.forRoot([PlayerEffects])
+    EffectsModule.forRoot([PlayerEffects]),
+    MatProgressBarModule
   ],
   providers: [
     TrackService,
     IndexDBService,
-    PlayerService
+    PlayerService,
+    provideAnimationsAsync()
   ],
   bootstrap: [AppComponent]
 })

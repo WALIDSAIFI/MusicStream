@@ -4,46 +4,62 @@
 
 input[type="range"] {
   -webkit-appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 8px;
-  background: #e2e8f0;
-  outline: none;
-  padding: 0;
-  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.2);
+  height: 8px;
+  border-radius: 4px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
+  margin-top: -4px;
+  background-color: rgb(59, 130, 246);
   height: 16px;
+  width: 16px;
   border-radius: 50%;
-  background: #3b82f6;
-  cursor: pointer;
-  transition: all .2s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  background: #2563eb;
-  transform: scale(1.1);
+input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.2);
+  height: 8px;
+  border-radius: 4px;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
+  border: none;
+  background-color: rgb(59, 130, 246);
   height: 16px;
-  border: 0;
+  width: 16px;
   border-radius: 50%;
-  background: #3b82f6;
-  cursor: pointer;
-  transition: all .2s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease;
 }
 
-input[type="range"]::-moz-range-thumb:hover {
-  background: #2563eb;
+input[type="range"]:hover::-webkit-slider-thumb {
   transform: scale(1.1);
+  background-color: rgb(96, 165, 250);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.1);
+  background-color: rgb(96, 165, 250);
+}
+
+input[type="range"]::-webkit-slider-container {
+  background: linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) var(--value-percent, 0%), rgba(255, 255, 255, 0.2) var(--value-percent, 0%));
+  border-radius: 4px;
+}
+
+input[type="range"]::-moz-range-progress {
+  background-color: rgb(59, 130, 246);
+  height: 8px;
+  border-radius: 4px;
 }
 
 .audio-player button {
@@ -67,4 +83,347 @@ input[type="range"]::-moz-range-thumb:hover {
 /* Animation de la barre de progression */
 .absolute {
   transition: width 0.1s linear;
+}
+
+/* Player styles */
+.player-container {
+  position:relative;
+  background-color: #000;
+  aspect-ratio: 16/9;
+}
+
+.player-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.player-container:hover .player-overlay {
+  opacity: 1;
+}
+
+/* Styles des contrôles */
+.player-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.player-container:hover .player-controls {
+  opacity: 1;
+}
+
+/* Boutons de contrôle */
+.control-button {
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Bouton de lecture principal */
+.play-button {
+  width: 56px;
+  height: 56px;
+  background: white;
+  border-radius: 50%;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.play-button:hover {
+  transform: scale(1.06);
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.play-button {
+  animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .player-container {
+    aspect-ratio: 4/3;
+  }
+}
+
+/* Styles pour la barre de progression native */
+progress {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+progress::-webkit-progress-bar {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+
+progress::-webkit-progress-value {
+  background-color: rgb(59, 130, 246);
+  border-radius: 9999px;
+  transition: width 0.1s ease;
+}
+
+progress::-moz-progress-bar {
+  background-color: rgb(59, 130, 246);
+  border-radius: 9999px;
+  transition: width 0.1s ease;
+}
+
+/* Effet hover */
+progress:hover::-webkit-progress-value {
+  background-color: rgb(96, 165, 250);
+}
+
+progress:hover::-moz-progress-bar {
+  background-color: rgb(96, 165, 250);
+}
+
+/* Conteneur des contrôles */
+.player-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+}
+
+/* Custom styles for Material Progress Bar */
+::ng-deep .custom-progress-bar {
+  height: 8px !important;
+  border-radius: 9999px !important;
+}
+
+::ng-deep .custom-progress-bar:hover {
+  height: 12px !important;
+  transition: height 0.2s;
+}
+
+::ng-deep .custom-progress-bar .mat-progress-bar-fill::after {
+  background-color: rgb(34 197 94) !important; /* Tailwind's green-500 */
+}
+
+::ng-deep .custom-progress-bar .mat-progress-bar-buffer {
+  background-color: rgb(255 255 255 / 0.2) !important; /* Tailwind's white/20 */
+}
+
+::ng-deep .custom-progress-bar .mat-progress-bar-background {
+  display: none;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect for the progress bar */
+.progress-bar {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.progress-bar:hover {
+  transform: scaleY(1.2);
+}
+
+/* Glow animation for the cursor handle */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  }
+}
+
+.cursor-handle {
+  animation: pulse 2s infinite;
+}
+
+/* Smooth transitions for all interactive elements */
+.progress-fill {
+  transition: width 0.1s ease-out;
+}
+
+.time-display {
+  transition: opacity 0.3s ease;
+}
+
+/* Active state styles */
+.progress-bar.active .progress-fill {
+  height: 4px;
+}
+
+.progress-bar.active .cursor-handle {
+  transform: scale(1.3);
+}
+
+/* Track info fade animation */
+@keyframes fadeInOut {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.track-info {
+  animation: fadeInOut 4s infinite ease-in-out;
+}
+
+/* Volume Control Styles */
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+}
+
+.volume-slider-container {
+  position: relative;
+  width: 100px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  opacity: 1;
+  visibility: visible;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  position: relative;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-top: -4px;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.volume-control:hover .volume-slider::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.volume-control:hover .volume-slider::-moz-range-thumb {
+  opacity: 1;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, #ffffff var(--volume-percentage), rgba(255, 255, 255, 0.2) var(--volume-percentage));
+  border-radius: 2px;
+  border: none;
+}
+
+.volume-slider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  border: none;
+}
+
+.volume-slider::-moz-range-progress {
+  background: #ffffff;
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Volume Icon Styles */
+.volume-icon {
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.volume-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.volume-icon svg {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.2s ease;
+}
+
+.volume-icon:hover svg {
+  color: #ffffff;
+}
+
+/* Volume Control Container Animation */
+.volume-control {
+  transition: opacity 0.3s ease;
+}
+
+.volume-control:hover {
+  opacity: 1;
+}
+
+/* Hide volume slider on small screens */
+@media (max-width: 640px) {
+  .volume-slider-container {
+    display: none;
+  }
+  
+  .volume-control {
+    min-width: unset;
+  }
 }

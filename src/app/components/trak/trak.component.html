@@ -1,123 +1,73 @@
-<div class="min-h-screen bg-gray-100 py-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- En-tête -->
-    <div class="mb-8">
-      <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
-          Ma bibliothèque musicale
-        </h1>
-        <a routerLink="/tracks/add"
-           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Ajouter un track
-        </a>
-      </div>
-
-      <!-- Filtres par boutons -->
-      <div class="flex flex-wrap gap-2 mb-6">
-        <button (click)="onCategoryChange('')"
-                [class.bg-blue-600]="!selectedCategory"
-                [class.text-white]="!selectedCategory"
-                [class.bg-gray-100]="selectedCategory"
-                [class.text-gray-700]="selectedCategory"
-                class="px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 hover:text-white transition-colors">
-          Tous
-        </button>
+<!-- Liste des pistes -->
+<div class="bg-gray-50 min-h-screen py-4">
+  <div class="max-w-full mx-auto px-4">
+    <!-- En-tête avec filtres -->
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <h1 class="text-xl font-bold text-gray-900">Ma Bibliothèque</h1>
+      <div class="flex flex-wrap gap-1">
         <button *ngFor="let category of categories"
                 (click)="onCategoryChange(category)"
                 [class.bg-blue-600]="selectedCategory === category"
-                [class.text-white]="selectedCategory === category"
-                [class.bg-gray-100]="selectedCategory !== category"
-                [class.text-gray-700]="selectedCategory !== category"
-                class="px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 hover:text-white transition-colors">
+                class="px-2 py-1 text-sm font-medium rounded transition-all
+                       hover:bg-blue-600 hover:text-white
+                       {{ selectedCategory === category ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-200' }}">
           {{ category }}
         </button>
-      </div>
-    </div>
-
-    <!-- Message d'erreur -->
-    <div *ngIf="error" class="mb-4 bg-red-50 p-4 rounded-md">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm font-medium text-red-800">{{ error }}</p>
-        </div>
+        <button (click)="onCategoryChange('')"
+                class="px-2 py-1 text-sm font-medium rounded bg-gray-700 text-white hover:bg-gray-800">
+          Tout
+        </button>
       </div>
     </div>
 
     <!-- État de chargement -->
-    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
     </div>
 
-    <!-- Liste des tracks -->
-    <div *ngIf="!isLoading" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <!-- Message si aucun track -->
-      <div *ngIf="filteredTracks.length === 0" class="col-span-full text-center py-12">
-        <p class="text-gray-500 text-lg">
-          {{ selectedCategory ? 'Aucun track dans cette catégorie' : 'Aucun track dans votre bibliothèque' }}
+    <!-- Message d'erreur -->
+    <div *ngIf="error" class="mb-2 bg-red-50 p-2 rounded text-sm text-red-600">
+      {{ error }}
+    </div>
+
+    <!-- Liste des pistes -->
+    <div *ngIf="!isLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <!-- Message si aucune piste -->
+      <div *ngIf="filteredTracks.length === 0" class="col-span-full text-center py-4">
+        <p class="text-gray-500 text-sm">
+          {{ selectedCategory ? 'Aucune piste dans cette catégorie' : 'Aucune piste dans votre bibliothèque' }}
         </p>
       </div>
 
-      <!-- Cards des tracks -->
+      <!-- Cartes avec lecteur -->
       <div *ngFor="let track of filteredTracks" 
-           class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-300">
-        <!-- Image du track -->
-        <div class="relative aspect-w-16 aspect-h-9">
-          <img *ngIf="track.imageUrl" 
-               [src]="track.imageUrl" 
+           class="group relative bg-white rounded shadow-sm hover:shadow-md transition-all">
+        <!-- Image avec overlay -->
+        <div class="relative aspect-square">
+          <img [src]="track.imageUrl || 'assets/default-album.png'"
                [alt]="track.title"
-               class="w-full h-48 object-cover">
-          <div *ngIf="!track.imageUrl" 
-               class="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <svg class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Informations du track -->
-        <div class="p-4">
-          <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ track.title }}</h3>
-          <p class="text-sm text-gray-600 mb-2">{{ track.artist }}</p>
+               class="w-full h-full object-cover rounded-t">
           
-          <!-- Badge catégorie -->
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {{ track.category }}
-          </span>
-        </div>
-
-        <!-- Actions -->
-        <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
-          <a [routerLink]="['/tracks', track.id]" 
-             class="text-sm font-medium text-blue-600 hover:text-blue-500">
-            Voir détails
-          </a>
-          <div class="flex space-x-2">
-            <a [routerLink]="['/tracks/edit', track.id]"
-               class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-500">
-              <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <!-- Overlay avec contrôle de lecture -->
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
+                      transition-opacity flex items-center justify-center">
+            <button (click)="playTrack(track)"
+                    class="p-4 rounded-full bg-white/90 hover:bg-white 
+                           transform hover:scale-110 transition-all">
+              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
               </svg>
-              <span>Modifier</span>
-            </a>
-            <button (click)="onDelete(track.id)"
-                    class="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-500">
-              <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-              <span>Supprimer</span>
             </button>
           </div>
+        </div>
+
+        <!-- Infos minimalistes -->
+        <div class="p-3">
+          <a [routerLink]="['/tracks', track.id]" class="block hover:text-blue-600">
+            <h3 class="text-base font-medium truncate">{{ track.title }}</h3>
+          </a>
+          <p class="text-sm text-gray-500 truncate mt-1">{{ track.artist }}</p>
         </div>
       </div>
     </div>
