@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 import { Track, MusicCategory } from '../../models/track.model';
 import { TrackService } from '../../service/track.service';
 import * as PlayerActions from '../../store/player/player.actions';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-trak',
@@ -19,7 +20,8 @@ export class TrakComponent implements OnInit {
 
   constructor(
     private trackService: TrackService,
-    private store: Store
+    private store: Store,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -56,15 +58,8 @@ export class TrakComponent implements OnInit {
     this.store.dispatch(PlayerActions.playTrack({ track }));
   }
 
-  toggleMenu(track: Track): void {
-    // Fermer tous les autres menus
-    this.filteredTracks.forEach(t => {
-      if (t !== track) {
-        t.showMenu = false;
-      }
-    });
-    // Basculer le menu de la piste actuelle
-    track.showMenu = !track.showMenu;
+  editTrack(track: Track): void {
+    this.router.navigate(['/tracks/edit', track.id]);
   }
 
   deleteTrack(track: Track): void {

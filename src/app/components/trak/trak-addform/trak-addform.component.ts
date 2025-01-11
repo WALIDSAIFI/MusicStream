@@ -92,4 +92,13 @@ export class TrakAddformComponent implements OnInit {
       }
     });
   }
+
+  onCancel(): void {
+    // Nettoyer les ressources si nécessaire
+    if (this.imagePreview) {
+      URL.revokeObjectURL(this.imagePreview);
+    }
+    // Rediriger vers la liste des tracks
+    this.router.navigate(['/tracks']);
+  }
 }

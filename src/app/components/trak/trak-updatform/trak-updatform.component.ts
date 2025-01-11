@@ -17,6 +17,7 @@ export class TrakUpdatformComponent implements OnInit, OnDestroy {
   error: string | null = null;
   imagePreview: string | null = null;
   private currentImageUrl: string | undefined;
+  audioFileName: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -46,7 +47,8 @@ export class TrakUpdatformComponent implements OnInit, OnDestroy {
       artist: ['', [Validators.required, Validators.maxLength(50)]],
       description: ['', [Validators.maxLength(200)]],
       category: ['', [Validators.required]],
-      image: [null]
+      image: [null],
+      audio: [null]
     });
   }
 
@@ -90,6 +92,19 @@ export class TrakUpdatformComponent implements OnInit, OnDestroy {
     }
   }
 
+  onAudioSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.trackForm.patchValue({ audio: file });
+      this.audioFileName = file.name;
+    }
+  }
+
+  getAudioFileName(url: string): string {
+    return url.split('/').pop() || 'fichier audio';
+  }
+
   onSubmit(): void {
     if (this.trackForm.valid && this.track) {
       this.isLoading = true;
@@ -103,6 +118,13 @@ export class TrakUpdatformComponent implements OnInit, OnDestroy {
       const imageFile = this.trackForm.get('image')?.value;
       if (imageFile instanceof File) {
         formData.append('image', imageFile);
+      }
+
+      const audioFile = this.trackForm.get('audio')?.value;
+      if (audioFile instanceof File) {
+        formData.append('audio', audioFile);
+      } else if (!audioFile && this.track.audioUrl) {
+        formData.append('audioUrl', this.track.audioUrl);
       }
 
       this.trackService.updateTrack(this.track.id, formData).subscribe({

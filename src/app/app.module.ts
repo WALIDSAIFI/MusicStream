@@ -24,6 +24,7 @@ import { playerReducer } from './store/player/player.reducer';
 import { PlayerEffects } from './store/player/player.effects';
 import { TimePipe } from './pipes/time.pipe';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { FilenamePipe } from './pipes/filename.pipe';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
     BiblioComponent,
     PlayerComponent,
     PlayerControlsComponent,
-    TimePipe
+    TimePipe,
+    FilenamePipe
   ],
   imports: [
     BrowserModule,

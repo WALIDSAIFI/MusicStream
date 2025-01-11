@@ -31,7 +31,7 @@
     </div>
 
     <!-- Liste des pistes -->
-    <div *ngIf="!isLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div *ngIf="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
       <!-- Message si aucune piste -->
       <div *ngIf="filteredTracks.length === 0" class="col-span-full text-center py-4">
         <p class="text-gray-500 text-sm">
@@ -41,20 +41,21 @@
 
       <!-- Cartes avec lecteur -->
       <div *ngFor="let track of filteredTracks" 
-           class="group relative bg-white rounded shadow-sm hover:shadow-md transition-all">
+           class="group relative bg-white rounded-lg shadow-sm hover:shadow-xl transition-all">
         <!-- Image avec overlay -->
         <div class="relative aspect-square">
           <img [src]="track.imageUrl || 'assets/default-album.png'"
                [alt]="track.title"
-               class="w-full h-full object-cover rounded-t">
+               class="w-full h-full object-cover rounded-t-lg">
           
           <!-- Overlay avec contrôle de lecture -->
           <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
                       transition-opacity flex items-center justify-center">
+            <!-- Bouton lecture -->
             <button (click)="playTrack(track)"
-                    class="p-4 rounded-full bg-white/90 hover:bg-white 
+                    class="p-5 rounded-full bg-white/90 hover:bg-white 
                            transform hover:scale-110 transition-all">
-              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
               </svg>
@@ -63,11 +64,31 @@
         </div>
 
         <!-- Infos minimalistes -->
-        <div class="p-3">
-          <a [routerLink]="['/tracks', track.id]" class="block hover:text-blue-600">
-            <h3 class="text-base font-medium truncate">{{ track.title }}</h3>
-          </a>
-          <p class="text-sm text-gray-500 truncate mt-1">{{ track.artist }}</p>
+        <div class="p-4">
+          <div class="flex items-center justify-between">
+            <a [routerLink]="['/tracks', track.id]" class="block hover:text-blue-600 flex-1">
+              <h3 class="text-lg font-medium truncate">{{ track.title }}</h3>
+            </a>
+            <div class="flex items-center gap-3 ml-3">
+              <!-- Bouton modification -->
+              <button (click)="editTrack(track); $event.preventDefault()"
+                      class="p-2 text-blue-500 hover:text-blue-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <!-- Bouton suppression -->
+              <button (click)="deleteTrack(track); $event.preventDefault()"
+                      class="p-2 text-red-500 hover:text-red-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <p class="text-sm text-gray-500 truncate mt-2">{{ track.artist }}</p>
         </div>
       </div>
     </div>

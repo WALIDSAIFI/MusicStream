@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  music-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - music_data:/usr/share/nginx/html/assets/tracks
+    restart: unless-stopped
+
+volumes:
+  music_data:
+    driver: local
